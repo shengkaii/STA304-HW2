@@ -1,0 +1,424 @@
+---
+title: "What Affects People's Intention to Have Children in Canada"
+author: "Kai Sheng, Shiqi Liu, Wuxin Dong"
+date: 2020-10-19
+categories: ["R"]
+tags: ["R Markdown", "plot", "regression"]
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+```
+
+## Abstract
+
+As the trend of population aging increases, the fertility intentions of families have become a more crucial topic for the society as a whole. In this paper, we explore the survey data collected by the 2017 General Social Survey (GSS) on the Family to better understand what factors will affect people's intention for having children and how these factors will affect their intentions in Canada. Our findings have shown that the gender, age, health condition and education level will all affect people's decisions about whether or not to have children. Our study and analysis could have implications for policy makers and family researchers who are interested in people's fertility intention, since our study results could help them to better revise policy to encourage fertility and conduct future researches respectively.
+
+## Introduction
+
+In today's society, the structures of family have changed a lot, but the role family plays in people's lives is irreplaceable. Children have always been an important component of the family, because people's intention to have children could imply the characteristics and socio-economic conditions of families. Understanding what affects people's intention to have children is an interesting topic for family researchers and policy makers. Many researches about whether or not people want to have children have been conducted, whose results can help them measure the changes in living conditions and well-being of families, and to assess the effects of family-related policy. Therefore, to determine what factors will affect people's intention to have children, and the number of total children they are intending to have is of significance.
+
+Individual attitudes and behaviors regarding the intentions to have children tend to be influenced by their family system, communication and the attitudes of other family members (Marisa & Anne, 2017). Besides, personal attitudes towards life will also affect people's decision-making process on whether or not to have children, which means people who have positive attitude through the life are more likely to intend to have children, or to have more children than those who are relatively pessimistic. Furthermore, fertility intentions seem to differ between different gender groups. More specifically, men are more likely to have intentions for children than women. Moreover, educational level also contributes to people's decision-making about fertility. Some research has shown that people with higher education levels are less likely to intend to have children (Maria, 2014).
+
+In this paper, through the study of the 2017 General Social Survey (GSS) on the Family, we find that people's feelings about life, their satisfaction towards life will affect people's intention to have children. Both physical and mental self-health conditions matter when deciding to have children. Beyond that, there are splits between different age and gender groups in terms of their fertility intentions.
+
+For analysis, we will firstly do data-cleaning to choose and preserve variables of our interest, which include number_total_children_intention, age, sex, education, self_rated_health, and self_rated_mental_health. To further investigate the demographic distribution of respondents, we also include income_respondent and region. With regard to the model, we would like to use Logistic Regression to analyze the effect of above factors on people's intention for whether or not having children.
+
+
+```{r, echo = FALSE, message=FALSE}
+#install below packages if not installed yet
+#install.packages("tidyverse")
+#install.packages("dplyr")
+#install.packages("kableExtra")
+#install.packages("survey")
+library(tidyverse)
+library(dplyr)
+library(kableExtra)
+library(survey)
+fig_cap <- captioner::captioner()
+tab_cap <- captioner::captioner("Table")
+
+```
+
+
+## Data
+
+The data used in the following analysis was obtained from the 2017 General Social Survey (GSS) on the Family and cleaned using an R Package created by Alexander and Caetano (2020). Two primary objectives of the GSS are to gather data on social trends to monitor changes in the living conditions and well-being of Canadians over time, and to provide information on specific social policy. 
+
+### Key Features
+
+The 2017 GSS focused on families' characteristics, diversity and future. Two comprised components of the data are core content and classification variables, of which the core content is to measure changes in well-being, and effects of specific policy issues, and classification variables (such as, age, sex, education and income) are to collect demographic information for use in the analysis of core data.
+
+### Methodology
+
+The data set consists of both numerical variables and categorical variables which exhibits the demographics and characteristics of families in Canada. The target population for the 2017 GSS included all persons 15 years of age older in Canada, excluding residents of the Yukon, Northwest Territories, and Nunavut, and full-time residents of institutions. Regarding the probability sampling method, they use stratified random sampling by dividing 10 provinces into strata, which are geographic areas. With many of the Census Metropolitan Areas (CMAs) being considered as separate strata, there were 27 strata in total. Using stratified random sampling can reduce the bias and variability of results, because within one strata, additional samples are homogeneous, thus statistics for sampled values will vary less across samples.
+
+The sampling frame of the data was a combination of the list of telephone number (both landline and cellular) in use available to Statistics Canada and the Address Register (AR), which is the list of all dwellings within the 10 provinces. They use all telephone numbers (linked and not linked to the AR), which could make sure a coverage of all households with telephones. They also included cellular phone number this year, which enlarged the frame by adding households without landlines. Because many young families might not have landlines nowadays.
+
+Within each geographic stratum, they carry out a simple random sampling without replacement to obtain the sample. The target sample size was 20,000, while the actual number of respondents was 20,602. The sample size was large, and was proportionally chosen from 10 provinces, therefore, the sample was representative of the target population. However, households without telephones or not registered on AR were just excluded from the sampled population. This would omit new families who had not had the chance to register and the families with poor economic conditions who could not afford the telephone bills.
+
+Data collection for the 2017 GSS was conducted via computer assisted telephone interviews (CATI) in the official language of respondents' choice. The interview calls were made from approximately 9 AM to 9:30 PM on workdays, with schedule extension from 10 AM to 5 PM on Saturdays and 1 PM to 9 PM on Sundays. The extension of interview schedule made it more flexible for respondents, which could help increase the response rate. However, calls were only made during the daytime on weekdays, and it was very likely that there was no one at home for working families during those times. This could cause an obvious decline of response rate.
+
+For non-response, they re-contacted up to two more times to explain the importance of the survey to those who refused to participate at first. They also arranged appointment to call back at a more convenient time for those who were inconvenient at the first call. For cases in which there was no one at home, numerous call backs were made. The combination of these strategies dealing with 3 different situations would increase the response rate. However, the associated costs were high due to large time and human resources consumption. Besides, the re-arrangement of the interview could not be very efficient, because respondents might be unavailable again during the newly-scheduled time, or they might forget it.
+
+### Data Type and Selection
+
+In our analysis, we will focus on the variable number_total_children_intention, age, sex, income_respondent, education, self_rated_health, and self_rated_mental_health. Since we would like to investigate the factors influencing people's intention for having children, we will use number_total_children_intention as our response variable in the model. Another similar variable in the dataset is future_children_intention, which is a categorical variable. We decided to choose number_total_children_intention as our response variable, because the answers for the question collecting data for future_children_intention are different categories, "Probably yes" and "Probably no" are too ambiguous for analysis. We are not sure respondents' true intention for children by referring these category anwers. While number_total_children_intention is a numerical variable with certain numerical answers, which is easier for quantity analysis, and to be transformed to a binary variable.
+
+
+### Questionnaire for Data Collection
+
+For variable age, it is confirmed by asking the respondents to provide their date of birth. With this variable provided, some questions later in the survey are then determined to be asked or not. It enhances the accuracy of this variable and responses related to this variable. Nevertheless, since the survey was conducted through a phone call, it becomes more difficult to verify the information.
+
+For variable income, no questions would be asked, and the information would be obtained through a linkage to tax data. This will increase the quality of this variable as it eliminate the burden of respondents. One thing to notice is that there were people who rejected the linkage and no linkage to their tax data took place.
+
+For variable self_rated_health and self_rated_mental_health, the question was "In general, would you say your (mental) health is...?". They provided a range for respondents to make it more convenient for them to answer. However, the questions might be too general, because they did not clearly explain what each category means. For example, 'Poor" in terms of mental health could mean that you always feel unhappy and disordered and you feel hopeless about life.
+
+For variable number_total_children_intention, it collected people's intentions about giving birthing or having more children. Moreover, questions about what contraceptive methods they use are also asked. Therefore, the result should be of high quality and give a clearer picture of fertility. However, there were more than half of respondents just skipped this question.
+
+### Raw Data Overview
+
+
+```{r, echo = FALSE}
+gss <- read.csv("gss.csv")
+#Raw Data Table
+raw_data <- gss%>%select(number_total_children_intention, age, sex,
+                      education, self_rated_health,
+                      self_rated_mental_health, income_respondent)
+
+
+sex <- raw_data%>%group_by(sex)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(raw_data),2)*100,"%"))
+education <- raw_data%>%group_by(education)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(raw_data),2)*100,"%"))
+self_rated_mental_health <- raw_data%>%group_by(self_rated_mental_health)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(raw_data),2)*100,"%"))
+self_rated_health <- raw_data%>%group_by(self_rated_health)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(raw_data),2)*100,"%"))
+income_respondent <- raw_data%>%group_by(income_respondent)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(raw_data),2)*100,"%"))
+
+
+demogr1 <- rbind(sex,
+                education%>%rename(sex=education),
+                self_rated_mental_health%>%rename(sex=self_rated_mental_health),
+                self_rated_health%>%rename(sex=self_rated_health),
+                income_respondent%>%rename(sex=income_respondent))
+colnames(demogr1) <- c("Variable", "Count", "Proportion")
+
+demogr1 <- demogr1%>%kbl(caption="Respondent Demographics",
+                       align=c("lrr"))%>%
+pack_rows("Sex",1,2)%>%pack_rows("Education",3,10)%>%pack_rows("Self Rated Mental Health",11,17)%>%pack_rows("Self Rated Health",18,24)%>%pack_rows("Income Respondent",25,30)
+demogr1
+```
+`r tab_cap(1,"Raw Data Overview")`
+
+As shown in table 1, it gives us a brief overview of our selected raw data. Since the report will review the results of the clean version of this table which will be table 3 in our result part, we will focus on what changes we need to make to our raw data. We can see that there are NAs in Education and Self rated health. In addition, there are "Don't know" in the self rated mental health and self rated health. Therefore, we would consider to remove these unknowns as to make our analysis more useful. Furthermore, we can see from education that there are so many categories under it and we may need to group some of them together to make our report cleaner and more representative. Last but not the least, number_total_children_intention and age are not included in this table because they are numeric variables. As a result, we decided to clean our data by putting age into different 5 age groups and number_total_children_intention into 2 groups with yes and no. 
+
+
+## Model
+
+```{r, echo = FALSE}
+#Variables of interest
+raw_data <- gss%>%select(number_total_children_intention, age, sex,
+                      education, self_rated_health,
+                      self_rated_mental_health, income_respondent)
+#Rename
+mdata <- raw_data%>%rename(health = self_rated_health,
+                        mental_health=self_rated_mental_health,
+                        income=income_respondent)
+#Filter NA
+mdata <- mdata%>%filter(!is.na(number_total_children_intention))
+mdata <- mdata%>%filter(mental_health != "Don't know")
+mdata <- mdata%>%filter(health != "Don't know")
+mdata <- mdata%>%filter(!is.na(education))
+#Group age
+mdata$age_group = mdata$age
+mdata$age_group[mdata$age_group<= 25] <- "15-25"
+mdata$age_group[mdata$age_group<= 35 & mdata$age_group > 25] <- "25-35"
+mdata$age_group[mdata$age_group<= 45 & mdata$age_group > 35] <- "35-45"
+mdata$age_group[mdata$age_group<= 55 & mdata$age_group > 45] <- "45-55"
+mdata$age_group[mdata$age_group > 55] <- "55-80"
+#Group Education
+mdata$education[mdata$education == 'High school diploma or a high school equivalency certificate'] <- 'High School'
+mdata$education[mdata$education == "Bachelor's degree (e.g. B.A., B.Sc., LL.B.)"] <- 'Bachelor'
+mdata$education[mdata$education == "University certificate, diploma or degree above the bach..."] <- 'Bachelor'
+mdata$education[mdata$education == "College, CEGEP or other non-university certificate or di..."] <- 'College'
+mdata$education[mdata$education == "University certificate or diploma below the bachelor's level"] <- 'College'
+mdata$education[mdata$education == "Less than high school diploma or its equivalent"] <- 'Below High School'
+mdata$education[mdata$education == "Trade certificate or diploma"] <- 'Trade Cert'
+#Children intention
+mdata<-mdata%>%rename(children_intention = number_total_children_intention)
+mdata$intentionYN = mdata$children_intention
+mdata$intentionYN[mdata$intentionYN != 0] <- "Yes"
+mdata$intentionYN[mdata$intentionYN == 0] <- "No"
+mdata$children_intention[mdata$children_intention != 0] <- 1
+mdata$children_intention[mdata$children_intention == 0] <- 0
+```
+### Data Cleaning
+
+As mentioned before, we will focus on the variable number_total_children_intention, age, sex, income_respondent, education, self_rated_health, and self_rated_mental_health. We cleaned our data by renaming self_rated_health as health, self_rated_mental_health as mental_health, income_respondent as income and number_total_children_intention as children_intention. Then, we have removed all NAs in the children_intention and education as they were meaningless for our later analysis. For the same reason, we have also decided to remove all “Don’t know” values in the variables health and mental_health. 
+  
+In addition, we divided age into 5 groups, which were 15 - 25, 25 -35, 35-45, 45-55 and above 55. The reason we did that is that we would like to look at the percentage in each age group later in our table 1: Respondent Demographic. After that, we have also renamed and reduced the categories of the degrees as to make our later analysis clearer. The details about how we renamed and reduced the categories of the degrees under education will be in our appendix^1. In the end, since the majority of the responses for the question "Total number of children intending to have" are 0, we decide to divide the responses into two categories "1" and "0". Responses greater than 0 will be redefined as "1", while answers with 0 correspond to "0". Therefore, by running the logistic regression, we would like to find what affects people's decision on whether or not to have children. This binary variable with "1" representing people having fertility intention, while 0 representing people with no intention for having children.
+
+We divided respondents to different age groups when exhibiting the demographic table because this will makes it more convenient to identify the distribution of respondents' ages at the aggregate level. However, in our logistic regression model, we still use age rather than age groups, since we would like to see if there is a trend that people's intentions for children will decrease as age increases. Therefore, using age would be more helpful for our analysis. Besides, gender and education level, health conditions are all categorical variables, because these variables' values represent different categories of respondents. Among these categorical variables, except gender, all other 3 are ordinal categorical variables, because they represent different levels in which respondents are.
+
+### Model building and selection
+
+We selected children_intention as the response variable, which represents whether people want to have children or not, while the candidate predictor variables include age, sex, self rated health, self rated mental health and education. Since children intention is a binary response variable that has two possible outcomes, a logistic regression model was fitted to estimate the probability that someone intend to have children using all predictor variables. The reason why linear regression model is not appropriate here is that it will cause the response variable to exceed 1 or drop below 0, while probability must be between 0 and 1. Logistic regression model works better in predicting binary response variable as it take the form of log($\frac{p}{1-p}$) = $\beta_0$ + $\beta_1X_1$ + $\beta_2X_2$ + $\cdots$ + $\beta_kX_k$ In current study, p represents the probability of intention to have children, Xs represent the value of predictor variables, and  $\beta$s are the coefficients that we want to derive from the fitted model.
+Also, as we are using a survey data, we applied finite population correction to adjust the variance estimate for our estimated mean probability of intention to have children. The target population size is  30302287 by estimation, and the sample size after data cleaning is 8339. 
+In terms of software, we have used Rstudio to run out model.
+According to the first model (table 2) fitted using all candidate predictors, self rated health was not statistically significant, suggesting that people rated their health condition in different levels won't affect their intention to have children. Therefore, we removed self rated health from the predictors, and the final model only include age, sex, self rated mental health and education as predictor variables.
+
+
+```{r, echo = FALSE}
+
+N <- 30302287
+n <- nrow(mdata)
+fpc.srs = rep(N, n)
+
+intention.design <- svydesign(id=~1, data=mdata, fpc=fpc.srs)
+
+mysvylm <- svyglm(children_intention ~ age+sex+
+             health+mental_health + education, intention.design,family="binomial")
+#summary(mysvylm)
+
+```
+
+Coefficients |      Estimate     | Std. Error | t value | Pr(>|t|) 
+-----------|:-----------: |:-----------: |:-----------: |:-----------: |
+(Intercept)                |6.735434    |0.181971  |37.014  |< 2e-16 ***
+age                        |-0.197509   |0.004705  |-41.976 |< 2e-16 ***
+sexMale                    |0.678505    |0.059234  |11.455  |< 2e-16 ***
+healthFair                 |0.135754    |0.163250  |0.832   |0.405675    
+healthGood                 |0.059717    |0.089997  |0.664   |0.507006    
+healthPoor                 |-0.179565   |0.273441  |-0.657  |0.511400    
+healthVery good            |-0.005551   |0.078291  |-0.071  |0.943480    
+mental_healthFair          |-0.983360   |0.145937  |-6.738  |1.71e-11 ***
+mental_healthGood          |-0.437811   |0.088014  |-4.974  |6.68e-07 ***
+mental_healthPoor          |-1.116372   |0.266125  |-4.195  |2.76e-05 ***
+mental_healthVery good     |-0.280481   |0.077857  |-3.603  |0.000317 ***
+educationBelow High School |-1.295755   |0.148857  |-8.705  |< 2e-16 ***
+educationCollege           |-0.258151   |0.069528  |-3.713  |0.000206 ***
+educationHigh School       |-0.704451   |0.086347  |-8.158  |3.90e-16 ***
+educationTrade Cert        |-0.448523   |0.116699  |-3.843  |0.000122 ***
+
+`r tab_cap(2,"First Model with age, sex, health, mental_health, education as predictors")`
+
+## Result
+
+The results will be presented in 3 sections according to the following characteristics: numeric results from logistic model, demographic profile and children intention under each variable.
+
+### Numeric Results from Logistic Model
+
+```{r, echo = FALSE}
+mysvylm2 <- svyglm(children_intention ~ age+sex+
+          mental_health + education, intention.design,family="binomial")
+#summary(mysvylm2)
+
+```
+Coefficients |      Estimate     | Std. Error | t value | Pr(>|t|) 
+-----------|:-----------: |:-----------: |:-----------: |:-----------: |
+(Intercept)                |6.729232    |0.180621  |37.256  |< 2e-16 ***
+age                        |-0.197160   |0.004684  |-42.088 |< 2e-16 ***
+sexMale                    |0.679359    |0.059191  |11.477  |< 2e-16 ***
+mental_healthFair          |-0.946465   |0.135755  |-6.972  |3.37e-12 ***
+mental_healthGood          |-0.410005   |0.076675  |-5.347  |9.17e-08 ***
+mental_healthPoor          |-1.107626   |0.247633  |-4.473  |7.82e-06 ***
+mental_healthVery good     |-0.279409   |0.070868  |-3.943  |8.13e-05 ***
+educationBelow High School |-1.284758   |0.148362  |-8.660  |< 2e-16 ***
+educationCollege           |-0.256493   |0.069484  |-3.691  |0.000224 ***
+educationHigh School       |-0.698500   |0.085857  |-8.136  |4.70e-16 ***
+educationTrade Cert        |-0.445445   |0.116397  |-3.827  |0.000131 ***
+
+`r tab_cap(3,"Final Model with age, sex, mental_health, education as predictors")`
+
+As shown in table 3 above, for every unit increase in age, we expect the log odds of intention of having children to decrease by 0.197. When the respondent is a male, then we expect the log odds of intention of having children to increase by 0.679. When the mental health situation are poor, fair, good, very good or excellent, we expect the log odds of intention of having children to decrease by 1.107, 0.946, 0.41, 0.279 or 0 respectively. When the education level is below high school, high school, trade cert, college or bachelor, we expect the log odds of intention of having children to decrease by 1.284,  0.699, 0.445, 0.257.
+
+### Demographic Profile
+As shown in table 4, 52% female and 48% male constituted our selected respondents. For Age, the breakdown consisted of 17% between 15 and 25, 30%  between 25 - 35, 35% between 35 - 45, 18% of 45 - 55 and 1 % above 55. For education, the breakdowns included 34% bachelor's degree and above, 9% below high school degree, 28% college degree, 22% high school degree and 7% trade certificates. For mental health, the responses consisted of 29% excellent, 7% fair, 27% good, 2% poor and 35% very good.
+
+```{r, echo = FALSE}
+#Demographic table
+sex <- mdata%>%group_by(sex)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(mdata),2)*100,"%"))
+age_group <- mdata%>%group_by(age_group)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(mdata),2)*100,"%"))
+education <- mdata%>%group_by(education)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(mdata),2)*100,"%"))
+mental_health <- mdata%>%group_by(mental_health)%>%count()%>%
+  mutate(prop=paste(round(n/nrow(mdata),2)*100,"%"))
+
+
+demogr <- rbind(sex,age_group%>%rename(sex=age_group),
+                education%>%rename(sex=education),
+                mental_health%>%rename(sex=mental_health))
+colnames(demogr) <- c("Variable", "Count", "Proportion")
+demogr <- demogr%>%kbl(caption="Respondent Demographics",
+                       align=c("lrr"))%>%
+  pack_rows("Sex",1,2)%>%pack_rows("Age",3,7)%>%pack_rows("Education",8,12)%>%pack_rows("Mental_Health",13,17)
+demogr
+```
+`r tab_cap(4,"Respondent Demographic")`
+
+
+
+### Children Intention under Each Variable
+
+```{r, echo = FALSE}
+##Children intention
+intention <- mdata%>%group_by(children_intention)%>%count()
+x <-  intention$n
+labels <-  intention$children_intention
+piepercent<- round(100*x/sum(x), 1)
+
+pie(x, labels = piepercent, main = " Percentage of Intention to Have Children in Canada",col = rainbow(length(x)))
+legend("topright", c("No","Yes"), cex = 0.8,
+   fill = rainbow(length(x)))
+```
+
+`r fig_cap(1,"Chilren Intention")`
+
+As shown in figure 1, about 59% of the respondents have no intention to have a kid and 41 % of the respondents have intention to have one or more kids.
+
+
+```{r, echo = FALSE}
+#Children intention (group by sex)
+mdata %>% 
+    group_by(sex) %>% 
+    count(intentionYN) %>% 
+    mutate(prop = n/sum(n)) %>% 
+    ggplot(aes(x = sex, y = prop)) +
+    geom_col(aes(fill = intentionYN), position = "dodge") +
+    geom_text(aes(label = scales::percent(prop), 
+                  y = prop, 
+                  group = intentionYN),
+              position = position_dodge(width = 0.9),
+              vjust = 1.5)
+```
+
+`r fig_cap(2,"Children Intention by sex")`
+
+As shown in figure 2, female respondents have a 63.3% intention of not having a child. Male respondents have a 54.6% intention of not having a child. 
+
+```{r, echo = FALSE}
+#Children intention (group by education)
+mdata %>% 
+    group_by(education) %>% 
+    count(intentionYN) %>% 
+    mutate(prop = n/sum(n)) %>% 
+    ggplot(aes(x = education, y = prop)) +
+    geom_col(aes(fill = intentionYN), position = "dodge") +
+    geom_text(aes(label = scales::percent(prop), 
+                  y = prop, 
+                  group = intentionYN),
+              position = position_dodge(width = 0.9),
+              vjust = 1.5)
+```
+
+`r fig_cap(3,"Children Intention by education")`
+
+As shown in figure 3, 60.8% of respondents with bachelor degree have no fertility intentions, 42% of respondents with below high school degree have no fertility intentions, 64.2% of respondents with college degree have no fertility intentions, 56.1 % of respondents with high school degree have no fertility intentions and 62.2% of respondents with trade certificates no fertility intentions. 
+
+
+
+```{r, echo = FALSE}
+#Children intention (group by mental health)
+mdata %>% 
+    group_by(mental_health) %>% 
+    count(intentionYN) %>% 
+    mutate(prop = n/sum(n)) %>% 
+    ggplot(aes(x = mental_health, y = prop)) +
+    geom_col(aes(fill = intentionYN), position = "dodge") +
+    geom_text(aes(label = scales::percent(prop), 
+                  y = prop, 
+                  group = intentionYN),
+              position = position_dodge(width = 0.9),
+              vjust = 1.5)
+```
+
+`r fig_cap(4,"Children Intention by mental health")`
+
+As shown in figure 4, 53.4% of respondents with excellent mental health have no fertility intentions, 65.2% of respondents with fair mental health have no fertility intentions, 62.8 % of respondents with good mental health have no fertility intentions, 66.4% of respondents with poor mental health have no fertility intentions and 59.5% of respondents with very good mental health have no fertility intentions. 
+
+```{r, echo = FALSE}
+#Children intention (group by age group)
+mdata %>% 
+    group_by(age_group) %>% 
+    count(intentionYN) %>% 
+    mutate(prop = n/sum(n)) %>% 
+    ggplot(aes(x = age_group, y = prop)) +
+    geom_col(aes(fill = intentionYN), position = "dodge") +
+    geom_text(aes(label = scales::percent(prop), 
+                  y = prop, 
+                  group = intentionYN),
+              position = position_dodge(width = 0.9),
+              vjust = 1.5)
+```
+
+`r fig_cap(5,"Children Intention by age_group")`
+
+As shown in figure 5, 16.4% of respondents of age between 15 and 25 have no fertility intentions, 36.1% of respondents of age between 25 and 35 have no fertility intentions, 79.4% of respondents of age between 35 and 45 have no fertility intentions, 95.2 % of respondents of age between 45 and 55 have no fertility intentions and 94.1% of respondents of age between 55 and 88 have no fertility intentions. 
+
+## Discussion
+
+To begin with, from table 4: Respondents Demographic, we can see that the sex proportions were approximately the same, which would increase the representativeness of the survey results. Regarding the age, most of the respondents were youth and middle-age people. In terms of education, more than half of the respondents had a college or bachelor degree, which means that survey results would represent people with relatively higher education levels.
+
+Then, from figure 1: children intention, we have learned that our selected respondents' intention of not having a child is higher. It matches with the data from the world bank that Canada's fertility rate is continually decreasing these years(The World Bank Group, 2019). In addition, the data from the World Factbook stated Canada's fertility rate is ranked at 183th out of 224 countries (CIA, 2017). This further confirms that the result we see from figure 1  is reasonable. 
+  
+After that, we would like to discuss each variable in our model and how they are connected with our figures and real world. For the variable sex, we can learn from table 3 that if the respondent is a male, then the log odds of intention of having a child will increase. It matches with our result from figure 2 that more percentage of female respondents have no intention to have a child than male respondents. In real world, we have also observed similar situation. With positive society development, women have more autonomy and gender equality (Testa, 2016). They can participate more in the workforce. As they put more effort into their career and private lives, their intention of having child will decrease, or they will choose to delay childbearing. 
+  
+For the variable age, we can learn from table 3 that as the respondents get older, they will have less intention to have a child. It also matches with our result with figure 5 that for as the age_group increase with age, the intention of not having a kid also increases. In real world, we would also observe similar data. For women, starting from age 35, the number and quality of eggs get lower. As a result, the fertility rate and intention of having a child after age 35 will decrease. For men, the situation is similar. They will have lower sperm quality and lower level of male sex hormones when their ages are over 40 (Tommy’s, 2018). Therefore, the intention of having a child for men also decrease. 
+  
+For the variable mental_health, we have observed from table 3 that as the respondents have a lower mental_health level, they will have less intention to have a child. It matches with our observation from figure 4. However, in real world, it is said that from psychological perspective, a lower mental health level is not the causation of infertility or having less intention to have a child. That is, the mental health level may have correlation with intention of having children or not, but it is definitely not the reason of choosing to not have children. Furthermore, infertility can cause people to feel stressful and then decrease their mental health level (Witkin, 2018). We observed in our sample that respondents with lower mental health level have less intention to have a child. However, it might be that they have learned that they cannot have a child which decreases their mental health level. Nevertheless, we then need to consider why respondents with a higher level of mental health still have around about 50% of them will have no intention to have a child. Therefore, we need other variables to interpret this situation.
+
+For the variable education, we have observed from table 3 that respondents with a lower education degree will have less intention to have a child. However, this is completely opposite from what we observed in figure 3. In figure 3, we have showed that as the education degree decrease, respondents will have more intention to have a child. In real world, there is less study about educated men and their fertility intention. For women, a paper called "The Effect of Education on Overall Fertility" written by professor Phillip Decicca indicates that a higher education level would increase the chance for a woman to have any children by age 40 and decrease the total number of children she wants to have (Grassa,2017). This might partially explain the result from our table 3 as we only study if the respondents have the intention to have children or not. However, since our respondents consists of roughly 50% female and 50% male, the results are still mixed. There is no evidence to show if education level will affect men's intention to have children. Therefore, for future study, we may choose only female respondents in order to get a more concise outcome. 
+
+### Weaknesses
+
+Although the sample size of 2017 GSS data was substantial, households without telephones or not registered on AR were just excluded from the sampled population. This would omit new families who had not had the chance to register and the families with poor economic conditions who could not afford the telephone bills, which were also important components of the target population. Besides, the data collection method was telephone interview, but respondents might not be very comfortable with telephone interview, thus not willing to reveal their answers for relatively sensitive questions when talking to the interviewers. Furthermore, our response variable number_total_children_intention was generated from a question ("Total number of children intending to have") with a response rate of 52.3%, which was just a half. Since the respondents were only half of the sampled population, which would decrease the convincingness of our results.
+
+
+## Next Steps
+
+With regard to the survey itself, the questions in the questionnaire could be more specific and detailed by providing explanations for each scale in the options. Besides, for the rescheduled interview, we could add call reminder to increase the response rate. As for the model we used in analysis, we could also use the multilevel logistic regression model in the future to investigate whether the children intentions will vary between different geographical areas, age groups and sex groups at the same time. Furthermore, we could reserve the variable number_total_children_intention as the numerical variable, and run linear regression model to see if there is a linear relationship between people's age, education levels, income levels and the total number of children they intend to have. Last but not least, the religion could also be an efficient algorithm variable, some research had shown that the more religious the women were, the more they desired children. (Preis et al., 2020) Therefore, we could build a regression model to figure out whether there is a relationship between women's religion and their fertility intention in the future.
+
+## Appendix 
+
+1. "Bachelor's degree (e.g. B.A., B.Sc., LL.B.)" and "University certificate, diploma or degree above the bach..." are grouped together and renamed as “Bachelor”. "College, CEGEP or other non-university certificate or di..." and "University certificate or diploma below the bachelor's level" are grouped together and renamed as “College”. “High school diploma or a high school equivalency certificate” is renamed as “High School”. "Trade certificate or diploma" is renamed as “Trade Cert”. 
+
+## References
+
+Alexander, R., & Caetano, S. (2020). gss_cleaning.
+
+Authority of the Minister Responsible for Statistics Canada (2020). 2017 General Social Survey (GSS) on the Family [Datafile and codebook]. Retreived from http://dc.chass.utoronto.ca/myaccess.html
+
+Fertility rate, total (births per woman). (2019). Retrieved October 17, 2020, from https://data.worldbank.org/indicator/SP.DYN.TFRT.IN?end=2018
+  
+Grassa, J. L., &amp; News. (2017, March 08). The impact of education on declining birth rates. Retrieved October 17, 2020, from https://www.thesil.ca/impact-education-declining-birth-rates
+  
+Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2020). dplyr: A Grammar of Data Manipulation. https://dplyr.tidyverse.org, https://github.com/tidyverse/dplyr.
+  
+Hao Zhu (2020). kableExtra: Construct Complex Table with 'kable' and Pipe Syntax.
+http://haozhu233.github.io/kableExtra/, https://github.com/haozhu233/kableExtra.
+
+Tommy's: How age affects fertility. (2018). Retrieved October 17, 2020, from  
+https://www.tommys.org/pregnancy-information/planning-pregnancy/fertility-and-infertility/how-age-affects-fertility
+
+Matias, M., & Fontaine, A. M. (2017). Intentions to Have a Child: A Couple‐Based Process. Family Relations, 66(2), 231–243. https://doi.org/10.1111/fare.12250
+
+Preis, H., Tovim, S., Mor, P., Grisaru-Granovsky, S., Samueloff, A., & Benyamini, Y. (2020). Fertility intentions and the way they change following birth- a prospective longitudinal study. BMC pregnancy and childbirth, 20(1), 228. https://doi.org/10.1186/s12884-020-02922-y
+
+Testa, M. R. (2016). Educated women aren't realising their fertility intentions. Retrieved October 17,2020,from https://population-europe.eu/news/educated-women-arent-realising-their-fertility-intentions
+
+Testa, M. R. (2014). On the positive correlation between education and fertility intentions in Europe: Individual- and country-level evidence, Advances in Life Course Research, 21, 28-42.
+  https://doi.org/10.1016/j.alcr.2014.01.005
+
+T. Lumley (2020) "survey: analysis of complex survey samples". R package version 4.0.
+
+Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, https://doi.org/10.21105/joss.01686
+
+Witkin, G. (2018, May 17). Beyond the Physical: Mental Health on Your Fertility Journey. Retrieved October 17, 2020, from https://www.psychologytoday.com/us/blog/the-chronicles-infertility/201805/beyond-the-physical-mental-health-your-fertility-journey
+
+
+

@@ -1,0 +1,957 @@
+---
+title: "What Affects People's Intention to Have Children in Canada"
+author: "Kai Sheng, Shiqi Liu, Wuxin Dong"
+date: 2020-10-19
+categories: ["R"]
+tags: ["R Markdown", "plot", "regression"]
+---
+
+<script src="index_files/kePrint/kePrint.js"></script>
+<link href="index_files/lightable/lightable.css" rel="stylesheet" />
+
+
+<div id="abstract" class="section level2">
+<h2>Abstract</h2>
+<p>As the trend of population aging increases, the fertility intentions of families have become a more crucial topic for the society as a whole. In this paper, we explore the survey data collected by the 2017 General Social Survey (GSS) on the Family to better understand what factors will affect people’s intention for having children and how these factors will affect their intentions in Canada. Our findings have shown that the gender, age, health condition and education level will all affect people’s decisions about whether or not to have children. Our study and analysis could have implications for policy makers and family researchers who are interested in people’s fertility intention, since our study results could help them to better revise policy to encourage fertility and conduct future researches respectively.</p>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>In today’s society, the structures of family have changed a lot, but the role family plays in people’s lives is irreplaceable. Children have always been an important component of the family, because people’s intention to have children could imply the characteristics and socio-economic conditions of families. Understanding what affects people’s intention to have children is an interesting topic for family researchers and policy makers. Many researches about whether or not people want to have children have been conducted, whose results can help them measure the changes in living conditions and well-being of families, and to assess the effects of family-related policy. Therefore, to determine what factors will affect people’s intention to have children, and the number of total children they are intending to have is of significance.</p>
+<p>Individual attitudes and behaviors regarding the intentions to have children tend to be influenced by their family system, communication and the attitudes of other family members (Marisa &amp; Anne, 2017). Besides, personal attitudes towards life will also affect people’s decision-making process on whether or not to have children, which means people who have positive attitude through the life are more likely to intend to have children, or to have more children than those who are relatively pessimistic. Furthermore, fertility intentions seem to differ between different gender groups. More specifically, men are more likely to have intentions for children than women. Moreover, educational level also contributes to people’s decision-making about fertility. Some research has shown that people with higher education levels are less likely to intend to have children (Maria, 2014).</p>
+<p>In this paper, through the study of the 2017 General Social Survey (GSS) on the Family, we find that people’s feelings about life, their satisfaction towards life will affect people’s intention to have children. Both physical and mental self-health conditions matter when deciding to have children. Beyond that, there are splits between different age and gender groups in terms of their fertility intentions.</p>
+<p>For analysis, we will firstly do data-cleaning to choose and preserve variables of our interest, which include number_total_children_intention, age, sex, education, self_rated_health, and self_rated_mental_health. To further investigate the demographic distribution of respondents, we also include income_respondent and region. With regard to the model, we would like to use Logistic Regression to analyze the effect of above factors on people’s intention for whether or not having children.</p>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data used in the following analysis was obtained from the 2017 General Social Survey (GSS) on the Family and cleaned using an R Package created by Alexander and Caetano (2020). Two primary objectives of the GSS are to gather data on social trends to monitor changes in the living conditions and well-being of Canadians over time, and to provide information on specific social policy.</p>
+<div id="key-features" class="section level3">
+<h3>Key Features</h3>
+<p>The 2017 GSS focused on families’ characteristics, diversity and future. Two comprised components of the data are core content and classification variables, of which the core content is to measure changes in well-being, and effects of specific policy issues, and classification variables (such as, age, sex, education and income) are to collect demographic information for use in the analysis of core data.</p>
+</div>
+<div id="methodology" class="section level3">
+<h3>Methodology</h3>
+<p>The data set consists of both numerical variables and categorical variables which exhibits the demographics and characteristics of families in Canada. The target population for the 2017 GSS included all persons 15 years of age older in Canada, excluding residents of the Yukon, Northwest Territories, and Nunavut, and full-time residents of institutions. Regarding the probability sampling method, they use stratified random sampling by dividing 10 provinces into strata, which are geographic areas. With many of the Census Metropolitan Areas (CMAs) being considered as separate strata, there were 27 strata in total. Using stratified random sampling can reduce the bias and variability of results, because within one strata, additional samples are homogeneous, thus statistics for sampled values will vary less across samples.</p>
+<p>The sampling frame of the data was a combination of the list of telephone number (both landline and cellular) in use available to Statistics Canada and the Address Register (AR), which is the list of all dwellings within the 10 provinces. They use all telephone numbers (linked and not linked to the AR), which could make sure a coverage of all households with telephones. They also included cellular phone number this year, which enlarged the frame by adding households without landlines. Because many young families might not have landlines nowadays.</p>
+<p>Within each geographic stratum, they carry out a simple random sampling without replacement to obtain the sample. The target sample size was 20,000, while the actual number of respondents was 20,602. The sample size was large, and was proportionally chosen from 10 provinces, therefore, the sample was representative of the target population. However, households without telephones or not registered on AR were just excluded from the sampled population. This would omit new families who had not had the chance to register and the families with poor economic conditions who could not afford the telephone bills.</p>
+<p>Data collection for the 2017 GSS was conducted via computer assisted telephone interviews (CATI) in the official language of respondents’ choice. The interview calls were made from approximately 9 AM to 9:30 PM on workdays, with schedule extension from 10 AM to 5 PM on Saturdays and 1 PM to 9 PM on Sundays. The extension of interview schedule made it more flexible for respondents, which could help increase the response rate. However, calls were only made during the daytime on weekdays, and it was very likely that there was no one at home for working families during those times. This could cause an obvious decline of response rate.</p>
+<p>For non-response, they re-contacted up to two more times to explain the importance of the survey to those who refused to participate at first. They also arranged appointment to call back at a more convenient time for those who were inconvenient at the first call. For cases in which there was no one at home, numerous call backs were made. The combination of these strategies dealing with 3 different situations would increase the response rate. However, the associated costs were high due to large time and human resources consumption. Besides, the re-arrangement of the interview could not be very efficient, because respondents might be unavailable again during the newly-scheduled time, or they might forget it.</p>
+</div>
+<div id="data-type-and-selection" class="section level3">
+<h3>Data Type and Selection</h3>
+<p>In our analysis, we will focus on the variable number_total_children_intention, age, sex, income_respondent, education, self_rated_health, and self_rated_mental_health. Since we would like to investigate the factors influencing people’s intention for having children, we will use number_total_children_intention as our response variable in the model. Another similar variable in the dataset is future_children_intention, which is a categorical variable. We decided to choose number_total_children_intention as our response variable, because the answers for the question collecting data for future_children_intention are different categories, “Probably yes” and “Probably no” are too ambiguous for analysis. We are not sure respondents’ true intention for children by referring these category anwers. While number_total_children_intention is a numerical variable with certain numerical answers, which is easier for quantity analysis, and to be transformed to a binary variable.</p>
+</div>
+<div id="questionnaire-for-data-collection" class="section level3">
+<h3>Questionnaire for Data Collection</h3>
+<p>For variable age, it is confirmed by asking the respondents to provide their date of birth. With this variable provided, some questions later in the survey are then determined to be asked or not. It enhances the accuracy of this variable and responses related to this variable. Nevertheless, since the survey was conducted through a phone call, it becomes more difficult to verify the information.</p>
+<p>For variable income, no questions would be asked, and the information would be obtained through a linkage to tax data. This will increase the quality of this variable as it eliminate the burden of respondents. One thing to notice is that there were people who rejected the linkage and no linkage to their tax data took place.</p>
+<p>For variable self_rated_health and self_rated_mental_health, the question was “In general, would you say your (mental) health is…?”. They provided a range for respondents to make it more convenient for them to answer. However, the questions might be too general, because they did not clearly explain what each category means. For example, ’Poor" in terms of mental health could mean that you always feel unhappy and disordered and you feel hopeless about life.</p>
+<p>For variable number_total_children_intention, it collected people’s intentions about giving birthing or having more children. Moreover, questions about what contraceptive methods they use are also asked. Therefore, the result should be of high quality and give a clearer picture of fertility. However, there were more than half of respondents just skipped this question.</p>
+</div>
+<div id="raw-data-overview" class="section level3">
+<h3>Raw Data Overview</h3>
+<table>
+<caption>
+<span id="tab:unnamed-chunk-2">Table 1: </span>Respondent Demographics
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:right;">
+Count
+</th>
+<th style="text-align:right;">
+Proportion
+</th>
+</tr>
+</thead>
+<tbody>
+<tr grouplength="2">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Sex</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Female
+</td>
+<td style="text-align:right;">
+11203
+</td>
+<td style="text-align:right;">
+54 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Male
+</td>
+<td style="text-align:right;">
+9399
+</td>
+<td style="text-align:right;">
+46 %
+</td>
+</tr>
+<tr grouplength="8">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Education</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Bachelor’s degree (e.g. B.A., B.Sc., LL.B.)
+</td>
+<td style="text-align:right;">
+3753
+</td>
+<td style="text-align:right;">
+18 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+College, CEGEP or other non-university certificate or di…
+</td>
+<td style="text-align:right;">
+4566
+</td>
+<td style="text-align:right;">
+22 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+High school diploma or a high school equivalency certificate
+</td>
+<td style="text-align:right;">
+4848
+</td>
+<td style="text-align:right;">
+24 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Less than high school diploma or its equivalent
+</td>
+<td style="text-align:right;">
+3036
+</td>
+<td style="text-align:right;">
+15 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Trade certificate or diploma
+</td>
+<td style="text-align:right;">
+1483
+</td>
+<td style="text-align:right;">
+7 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+University certificate or diploma below the bachelor’s level
+</td>
+<td style="text-align:right;">
+732
+</td>
+<td style="text-align:right;">
+4 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+University certificate, diploma or degree above the bach…
+</td>
+<td style="text-align:right;">
+1843
+</td>
+<td style="text-align:right;">
+9 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+NA
+</td>
+<td style="text-align:right;">
+341
+</td>
+<td style="text-align:right;">
+2 %
+</td>
+</tr>
+<tr grouplength="7">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Self Rated Mental Health</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Don’t know
+</td>
+<td style="text-align:right;">
+57
+</td>
+<td style="text-align:right;">
+0 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Excellent
+</td>
+<td style="text-align:right;">
+6080
+</td>
+<td style="text-align:right;">
+30 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Fair
+</td>
+<td style="text-align:right;">
+1296
+</td>
+<td style="text-align:right;">
+6 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Good
+</td>
+<td style="text-align:right;">
+5813
+</td>
+<td style="text-align:right;">
+28 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Poor
+</td>
+<td style="text-align:right;">
+326
+</td>
+<td style="text-align:right;">
+2 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Very good
+</td>
+<td style="text-align:right;">
+6924
+</td>
+<td style="text-align:right;">
+34 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+NA
+</td>
+<td style="text-align:right;">
+106
+</td>
+<td style="text-align:right;">
+1 %
+</td>
+</tr>
+<tr grouplength="7">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Self Rated Health</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Don’t know
+</td>
+<td style="text-align:right;">
+57
+</td>
+<td style="text-align:right;">
+0 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Excellent
+</td>
+<td style="text-align:right;">
+4376
+</td>
+<td style="text-align:right;">
+21 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Fair
+</td>
+<td style="text-align:right;">
+2078
+</td>
+<td style="text-align:right;">
+10 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Good
+</td>
+<td style="text-align:right;">
+6162
+</td>
+<td style="text-align:right;">
+30 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Poor
+</td>
+<td style="text-align:right;">
+816
+</td>
+<td style="text-align:right;">
+4 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Very good
+</td>
+<td style="text-align:right;">
+7014
+</td>
+<td style="text-align:right;">
+34 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+NA
+</td>
+<td style="text-align:right;">
+99
+</td>
+<td style="text-align:right;">
+0 %
+</td>
+</tr>
+<tr grouplength="6">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Income Respondent</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+$100,000 to $ 124,999
+</td>
+<td style="text-align:right;">
+846
+</td>
+<td style="text-align:right;">
+4 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+$125,000 and more
+</td>
+<td style="text-align:right;">
+885
+</td>
+<td style="text-align:right;">
+4 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+$25,000 to $49,999
+</td>
+<td style="text-align:right;">
+6173
+</td>
+<td style="text-align:right;">
+30 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+$50,000 to $74,999
+</td>
+<td style="text-align:right;">
+3896
+</td>
+<td style="text-align:right;">
+19 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+$75,000 to $99,999
+</td>
+<td style="text-align:right;">
+2030
+</td>
+<td style="text-align:right;">
+10 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Less than $25,000
+</td>
+<td style="text-align:right;">
+6772
+</td>
+<td style="text-align:right;">
+33 %
+</td>
+</tr>
+</tbody>
+</table>
+<p>Table 1: Raw Data Overview</p>
+<p>As shown in table 1, it gives us a brief overview of our selected raw data. Since the report will review the results of the clean version of this table which will be table 3 in our result part, we will focus on what changes we need to make to our raw data. We can see that there are NAs in Education and Self rated health. In addition, there are “Don’t know” in the self rated mental health and self rated health. Therefore, we would consider to remove these unknowns as to make our analysis more useful. Furthermore, we can see from education that there are so many categories under it and we may need to group some of them together to make our report cleaner and more representative. Last but not the least, number_total_children_intention and age are not included in this table because they are numeric variables. As a result, we decided to clean our data by putting age into different 5 age groups and number_total_children_intention into 2 groups with yes and no.</p>
+</div>
+</div>
+<div id="model" class="section level2">
+<h2>Model</h2>
+<div id="data-cleaning" class="section level3">
+<h3>Data Cleaning</h3>
+<p>As mentioned before, we will focus on the variable number_total_children_intention, age, sex, income_respondent, education, self_rated_health, and self_rated_mental_health. We cleaned our data by renaming self_rated_health as health, self_rated_mental_health as mental_health, income_respondent as income and number_total_children_intention as children_intention. Then, we have removed all NAs in the children_intention and education as they were meaningless for our later analysis. For the same reason, we have also decided to remove all “Don’t know” values in the variables health and mental_health.</p>
+<p>In addition, we divided age into 5 groups, which were 15 - 25, 25 -35, 35-45, 45-55 and above 55. The reason we did that is that we would like to look at the percentage in each age group later in our table 1: Respondent Demographic. After that, we have also renamed and reduced the categories of the degrees as to make our later analysis clearer. The details about how we renamed and reduced the categories of the degrees under education will be in our appendix^1. In the end, since the majority of the responses for the question “Total number of children intending to have” are 0, we decide to divide the responses into two categories “1” and “0”. Responses greater than 0 will be redefined as “1”, while answers with 0 correspond to “0”. Therefore, by running the logistic regression, we would like to find what affects people’s decision on whether or not to have children. This binary variable with “1” representing people having fertility intention, while 0 representing people with no intention for having children.</p>
+<p>We divided respondents to different age groups when exhibiting the demographic table because this will makes it more convenient to identify the distribution of respondents’ ages at the aggregate level. However, in our logistic regression model, we still use age rather than age groups, since we would like to see if there is a trend that people’s intentions for children will decrease as age increases. Therefore, using age would be more helpful for our analysis. Besides, gender and education level, health conditions are all categorical variables, because these variables’ values represent different categories of respondents. Among these categorical variables, except gender, all other 3 are ordinal categorical variables, because they represent different levels in which respondents are.</p>
+</div>
+<div id="model-building-and-selection" class="section level3">
+<h3>Model building and selection</h3>
+<p>We selected children_intention as the response variable, which represents whether people want to have children or not, while the candidate predictor variables include age, sex, self rated health, self rated mental health and education. Since children intention is a binary response variable that has two possible outcomes, a logistic regression model was fitted to estimate the probability that someone intend to have children using all predictor variables. The reason why linear regression model is not appropriate here is that it will cause the response variable to exceed 1 or drop below 0, while probability must be between 0 and 1. Logistic regression model works better in predicting binary response variable as it take the form of log(<span class="math inline">\(\frac{p}{1-p}\)</span>) = <span class="math inline">\(\beta_0\)</span> + <span class="math inline">\(\beta_1X_1\)</span> + <span class="math inline">\(\beta_2X_2\)</span> + <span class="math inline">\(\cdots\)</span> + <span class="math inline">\(\beta_kX_k\)</span> In current study, p represents the probability of intention to have children, Xs represent the value of predictor variables, and <span class="math inline">\(\beta\)</span>s are the coefficients that we want to derive from the fitted model.
+Also, as we are using a survey data, we applied finite population correction to adjust the variance estimate for our estimated mean probability of intention to have children. The target population size is 30302287 by estimation, and the sample size after data cleaning is 8339.
+In terms of software, we have used Rstudio to run out model.
+According to the first model (table 2) fitted using all candidate predictors, self rated health was not statistically significant, suggesting that people rated their health condition in different levels won’t affect their intention to have children. Therefore, we removed self rated health from the predictors, and the final model only include age, sex, self rated mental health and education as predictor variables.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Coefficients</th>
+<th align="center">Estimate</th>
+<th align="center">Std. Error</th>
+<th align="center">t value</th>
+<th align="center">Pr(&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="center">6.735434</td>
+<td align="center">0.181971</td>
+<td align="center">37.014</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td>age</td>
+<td align="center">-0.197509</td>
+<td align="center">0.004705</td>
+<td align="center">-41.976</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td>sexMale</td>
+<td align="center">0.678505</td>
+<td align="center">0.059234</td>
+<td align="center">11.455</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td>healthFair</td>
+<td align="center">0.135754</td>
+<td align="center">0.163250</td>
+<td align="center">0.832</td>
+<td align="center">0.405675</td>
+</tr>
+<tr class="odd">
+<td>healthGood</td>
+<td align="center">0.059717</td>
+<td align="center">0.089997</td>
+<td align="center">0.664</td>
+<td align="center">0.507006</td>
+</tr>
+<tr class="even">
+<td>healthPoor</td>
+<td align="center">-0.179565</td>
+<td align="center">0.273441</td>
+<td align="center">-0.657</td>
+<td align="center">0.511400</td>
+</tr>
+<tr class="odd">
+<td>healthVery good</td>
+<td align="center">-0.005551</td>
+<td align="center">0.078291</td>
+<td align="center">-0.071</td>
+<td align="center">0.943480</td>
+</tr>
+<tr class="even">
+<td>mental_healthFair</td>
+<td align="center">-0.983360</td>
+<td align="center">0.145937</td>
+<td align="center">-6.738</td>
+<td align="center">1.71e-11 ***</td>
+</tr>
+<tr class="odd">
+<td>mental_healthGood</td>
+<td align="center">-0.437811</td>
+<td align="center">0.088014</td>
+<td align="center">-4.974</td>
+<td align="center">6.68e-07 ***</td>
+</tr>
+<tr class="even">
+<td>mental_healthPoor</td>
+<td align="center">-1.116372</td>
+<td align="center">0.266125</td>
+<td align="center">-4.195</td>
+<td align="center">2.76e-05 ***</td>
+</tr>
+<tr class="odd">
+<td>mental_healthVery good</td>
+<td align="center">-0.280481</td>
+<td align="center">0.077857</td>
+<td align="center">-3.603</td>
+<td align="center">0.000317 ***</td>
+</tr>
+<tr class="even">
+<td>educationBelow High School</td>
+<td align="center">-1.295755</td>
+<td align="center">0.148857</td>
+<td align="center">-8.705</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td>educationCollege</td>
+<td align="center">-0.258151</td>
+<td align="center">0.069528</td>
+<td align="center">-3.713</td>
+<td align="center">0.000206 ***</td>
+</tr>
+<tr class="even">
+<td>educationHigh School</td>
+<td align="center">-0.704451</td>
+<td align="center">0.086347</td>
+<td align="center">-8.158</td>
+<td align="center">3.90e-16 ***</td>
+</tr>
+<tr class="odd">
+<td>educationTrade Cert</td>
+<td align="center">-0.448523</td>
+<td align="center">0.116699</td>
+<td align="center">-3.843</td>
+<td align="center">0.000122 ***</td>
+</tr>
+</tbody>
+</table>
+<p>Table 2: First Model with age, sex, health, mental_health, education as predictors</p>
+</div>
+</div>
+<div id="result" class="section level2">
+<h2>Result</h2>
+<p>The results will be presented in 3 sections according to the following characteristics: numeric results from logistic model, demographic profile and children intention under each variable.</p>
+<div id="numeric-results-from-logistic-model" class="section level3">
+<h3>Numeric Results from Logistic Model</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Coefficients</th>
+<th align="center">Estimate</th>
+<th align="center">Std. Error</th>
+<th align="center">t value</th>
+<th align="center">Pr(&gt;</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="center">6.729232</td>
+<td align="center">0.180621</td>
+<td align="center">37.256</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td>age</td>
+<td align="center">-0.197160</td>
+<td align="center">0.004684</td>
+<td align="center">-42.088</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td>sexMale</td>
+<td align="center">0.679359</td>
+<td align="center">0.059191</td>
+<td align="center">11.477</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="even">
+<td>mental_healthFair</td>
+<td align="center">-0.946465</td>
+<td align="center">0.135755</td>
+<td align="center">-6.972</td>
+<td align="center">3.37e-12 ***</td>
+</tr>
+<tr class="odd">
+<td>mental_healthGood</td>
+<td align="center">-0.410005</td>
+<td align="center">0.076675</td>
+<td align="center">-5.347</td>
+<td align="center">9.17e-08 ***</td>
+</tr>
+<tr class="even">
+<td>mental_healthPoor</td>
+<td align="center">-1.107626</td>
+<td align="center">0.247633</td>
+<td align="center">-4.473</td>
+<td align="center">7.82e-06 ***</td>
+</tr>
+<tr class="odd">
+<td>mental_healthVery good</td>
+<td align="center">-0.279409</td>
+<td align="center">0.070868</td>
+<td align="center">-3.943</td>
+<td align="center">8.13e-05 ***</td>
+</tr>
+<tr class="even">
+<td>educationBelow High School</td>
+<td align="center">-1.284758</td>
+<td align="center">0.148362</td>
+<td align="center">-8.660</td>
+<td align="center">&lt; 2e-16 ***</td>
+</tr>
+<tr class="odd">
+<td>educationCollege</td>
+<td align="center">-0.256493</td>
+<td align="center">0.069484</td>
+<td align="center">-3.691</td>
+<td align="center">0.000224 ***</td>
+</tr>
+<tr class="even">
+<td>educationHigh School</td>
+<td align="center">-0.698500</td>
+<td align="center">0.085857</td>
+<td align="center">-8.136</td>
+<td align="center">4.70e-16 ***</td>
+</tr>
+<tr class="odd">
+<td>educationTrade Cert</td>
+<td align="center">-0.445445</td>
+<td align="center">0.116397</td>
+<td align="center">-3.827</td>
+<td align="center">0.000131 ***</td>
+</tr>
+</tbody>
+</table>
+<p>Table 3: Final Model with age, sex, mental_health, education as predictors</p>
+<p>As shown in table 3 above, for every unit increase in age, we expect the log odds of intention of having children to decrease by 0.197. When the respondent is a male, then we expect the log odds of intention of having children to increase by 0.679. When the mental health situation are poor, fair, good, very good or excellent, we expect the log odds of intention of having children to decrease by 1.107, 0.946, 0.41, 0.279 or 0 respectively. When the education level is below high school, high school, trade cert, college or bachelor, we expect the log odds of intention of having children to decrease by 1.284, 0.699, 0.445, 0.257.</p>
+</div>
+<div id="demographic-profile" class="section level3">
+<h3>Demographic Profile</h3>
+<p>As shown in table 4, 52% female and 48% male constituted our selected respondents. For Age, the breakdown consisted of 17% between 15 and 25, 30% between 25 - 35, 35% between 35 - 45, 18% of 45 - 55 and 1 % above 55. For education, the breakdowns included 34% bachelor’s degree and above, 9% below high school degree, 28% college degree, 22% high school degree and 7% trade certificates. For mental health, the responses consisted of 29% excellent, 7% fair, 27% good, 2% poor and 35% very good.</p>
+<table>
+<caption>
+<span id="tab:unnamed-chunk-6">Table 2: </span>Respondent Demographics
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:right;">
+Count
+</th>
+<th style="text-align:right;">
+Proportion
+</th>
+</tr>
+</thead>
+<tbody>
+<tr grouplength="2">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Sex</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Female
+</td>
+<td style="text-align:right;">
+4274
+</td>
+<td style="text-align:right;">
+52 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Male
+</td>
+<td style="text-align:right;">
+3955
+</td>
+<td style="text-align:right;">
+48 %
+</td>
+</tr>
+<tr grouplength="5">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Age</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+15-25
+</td>
+<td style="text-align:right;">
+1363
+</td>
+<td style="text-align:right;">
+17 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+25-35
+</td>
+<td style="text-align:right;">
+2440
+</td>
+<td style="text-align:right;">
+30 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+35-45
+</td>
+<td style="text-align:right;">
+2861
+</td>
+<td style="text-align:right;">
+35 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+45-55
+</td>
+<td style="text-align:right;">
+1447
+</td>
+<td style="text-align:right;">
+18 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+55-80
+</td>
+<td style="text-align:right;">
+118
+</td>
+<td style="text-align:right;">
+1 %
+</td>
+</tr>
+<tr grouplength="5">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Education</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Bachelor
+</td>
+<td style="text-align:right;">
+2830
+</td>
+<td style="text-align:right;">
+34 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Below High School
+</td>
+<td style="text-align:right;">
+755
+</td>
+<td style="text-align:right;">
+9 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+College
+</td>
+<td style="text-align:right;">
+2269
+</td>
+<td style="text-align:right;">
+28 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+High School
+</td>
+<td style="text-align:right;">
+1787
+</td>
+<td style="text-align:right;">
+22 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Trade Cert
+</td>
+<td style="text-align:right;">
+588
+</td>
+<td style="text-align:right;">
+7 %
+</td>
+</tr>
+<tr grouplength="5">
+<td colspan="3" style="border-bottom: 1px solid;">
+<strong>Mental_Health</strong>
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Excellent
+</td>
+<td style="text-align:right;">
+2425
+</td>
+<td style="text-align:right;">
+29 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Fair
+</td>
+<td style="text-align:right;">
+569
+</td>
+<td style="text-align:right;">
+7 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Good
+</td>
+<td style="text-align:right;">
+2248
+</td>
+<td style="text-align:right;">
+27 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Poor
+</td>
+<td style="text-align:right;">
+146
+</td>
+<td style="text-align:right;">
+2 %
+</td>
+</tr>
+<tr>
+<td style="text-align:left; padding-left:  2em;" indentlevel="1">
+Very good
+</td>
+<td style="text-align:right;">
+2841
+</td>
+<td style="text-align:right;">
+35 %
+</td>
+</tr>
+</tbody>
+</table>
+<p>Table 4: Respondent Demographic</p>
+</div>
+<div id="children-intention-under-each-variable" class="section level3">
+<h3>Children Intention under Each Variable</h3>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Figure 1: Chilren Intention</p>
+<p>As shown in figure 1, about 59% of the respondents have no intention to have a kid and 41 % of the respondents have intention to have one or more kids.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Figure 2: Children Intention by sex</p>
+<p>As shown in figure 2, female respondents have a 63.3% intention of not having a child. Male respondents have a 54.6% intention of not having a child.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Figure 3: Children Intention by education</p>
+<p>As shown in figure 3, 60.8% of respondents with bachelor degree have no fertility intentions, 42% of respondents with below high school degree have no fertility intentions, 64.2% of respondents with college degree have no fertility intentions, 56.1 % of respondents with high school degree have no fertility intentions and 62.2% of respondents with trade certificates no fertility intentions.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Figure 4: Children Intention by mental health</p>
+<p>As shown in figure 4, 53.4% of respondents with excellent mental health have no fertility intentions, 65.2% of respondents with fair mental health have no fertility intentions, 62.8 % of respondents with good mental health have no fertility intentions, 66.4% of respondents with poor mental health have no fertility intentions and 59.5% of respondents with very good mental health have no fertility intentions.</p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>Figure 5: Children Intention by age_group</p>
+<p>As shown in figure 5, 16.4% of respondents of age between 15 and 25 have no fertility intentions, 36.1% of respondents of age between 25 and 35 have no fertility intentions, 79.4% of respondents of age between 35 and 45 have no fertility intentions, 95.2 % of respondents of age between 45 and 55 have no fertility intentions and 94.1% of respondents of age between 55 and 88 have no fertility intentions.</p>
+</div>
+</div>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
+<p>To begin with, from table 4: Respondents Demographic, we can see that the sex proportions were approximately the same, which would increase the representativeness of the survey results. Regarding the age, most of the respondents were youth and middle-age people. In terms of education, more than half of the respondents had a college or bachelor degree, which means that survey results would represent people with relatively higher education levels.</p>
+<p>Then, from figure 1: children intention, we have learned that our selected respondents’ intention of not having a child is higher. It matches with the data from the world bank that Canada’s fertility rate is continually decreasing these years(The World Bank Group, 2019). In addition, the data from the World Factbook stated Canada’s fertility rate is ranked at 183th out of 224 countries (CIA, 2017). This further confirms that the result we see from figure 1 is reasonable.</p>
+<p>After that, we would like to discuss each variable in our model and how they are connected with our figures and real world. For the variable sex, we can learn from table 3 that if the respondent is a male, then the log odds of intention of having a child will increase. It matches with our result from figure 2 that more percentage of female respondents have no intention to have a child than male respondents. In real world, we have also observed similar situation. With positive society development, women have more autonomy and gender equality (Testa, 2016). They can participate more in the workforce. As they put more effort into their career and private lives, their intention of having child will decrease, or they will choose to delay childbearing.</p>
+<p>For the variable age, we can learn from table 3 that as the respondents get older, they will have less intention to have a child. It also matches with our result with figure 5 that for as the age_group increase with age, the intention of not having a kid also increases. In real world, we would also observe similar data. For women, starting from age 35, the number and quality of eggs get lower. As a result, the fertility rate and intention of having a child after age 35 will decrease. For men, the situation is similar. They will have lower sperm quality and lower level of male sex hormones when their ages are over 40 (Tommy’s, 2018). Therefore, the intention of having a child for men also decrease.</p>
+<p>For the variable mental_health, we have observed from table 3 that as the respondents have a lower mental_health level, they will have less intention to have a child. It matches with our observation from figure 4. However, in real world, it is said that from psychological perspective, a lower mental health level is not the causation of infertility or having less intention to have a child. That is, the mental health level may have correlation with intention of having children or not, but it is definitely not the reason of choosing to not have children. Furthermore, infertility can cause people to feel stressful and then decrease their mental health level (Witkin, 2018). We observed in our sample that respondents with lower mental health level have less intention to have a child. However, it might be that they have learned that they cannot have a child which decreases their mental health level. Nevertheless, we then need to consider why respondents with a higher level of mental health still have around about 50% of them will have no intention to have a child. Therefore, we need other variables to interpret this situation.</p>
+<p>For the variable education, we have observed from table 3 that respondents with a lower education degree will have less intention to have a child. However, this is completely opposite from what we observed in figure 3. In figure 3, we have showed that as the education degree decrease, respondents will have more intention to have a child. In real world, there is less study about educated men and their fertility intention. For women, a paper called “The Effect of Education on Overall Fertility” written by professor Phillip Decicca indicates that a higher education level would increase the chance for a woman to have any children by age 40 and decrease the total number of children she wants to have (Grassa,2017). This might partially explain the result from our table 3 as we only study if the respondents have the intention to have children or not. However, since our respondents consists of roughly 50% female and 50% male, the results are still mixed. There is no evidence to show if education level will affect men’s intention to have children. Therefore, for future study, we may choose only female respondents in order to get a more concise outcome.</p>
+<div id="weaknesses" class="section level3">
+<h3>Weaknesses</h3>
+<p>Although the sample size of 2017 GSS data was substantial, households without telephones or not registered on AR were just excluded from the sampled population. This would omit new families who had not had the chance to register and the families with poor economic conditions who could not afford the telephone bills, which were also important components of the target population. Besides, the data collection method was telephone interview, but respondents might not be very comfortable with telephone interview, thus not willing to reveal their answers for relatively sensitive questions when talking to the interviewers. Furthermore, our response variable number_total_children_intention was generated from a question (“Total number of children intending to have”) with a response rate of 52.3%, which was just a half. Since the respondents were only half of the sampled population, which would decrease the convincingness of our results.</p>
+</div>
+</div>
+<div id="next-steps" class="section level2">
+<h2>Next Steps</h2>
+<p>With regard to the survey itself, the questions in the questionnaire could be more specific and detailed by providing explanations for each scale in the options. Besides, for the rescheduled interview, we could add call reminder to increase the response rate. As for the model we used in analysis, we could also use the multilevel logistic regression model in the future to investigate whether the children intentions will vary between different geographical areas, age groups and sex groups at the same time. Furthermore, we could reserve the variable number_total_children_intention as the numerical variable, and run linear regression model to see if there is a linear relationship between people’s age, education levels, income levels and the total number of children they intend to have. Last but not least, the religion could also be an efficient algorithm variable, some research had shown that the more religious the women were, the more they desired children. (Preis et al., 2020) Therefore, we could build a regression model to figure out whether there is a relationship between women’s religion and their fertility intention in the future.</p>
+</div>
+<div id="appendix" class="section level2">
+<h2>Appendix</h2>
+<ol style="list-style-type: decimal">
+<li>“Bachelor’s degree (e.g. B.A., B.Sc., LL.B.)” and “University certificate, diploma or degree above the bach…” are grouped together and renamed as “Bachelor”. “College, CEGEP or other non-university certificate or di…” and “University certificate or diploma below the bachelor’s level” are grouped together and renamed as “College”. “High school diploma or a high school equivalency certificate” is renamed as “High School”. “Trade certificate or diploma” is renamed as “Trade Cert”.</li>
+</ol>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Alexander, R., &amp; Caetano, S. (2020). gss_cleaning.</p>
+<p>Authority of the Minister Responsible for Statistics Canada (2020). 2017 General Social Survey (GSS) on the Family [Datafile and codebook]. Retreived from <a href="http://dc.chass.utoronto.ca/myaccess.html" class="uri">http://dc.chass.utoronto.ca/myaccess.html</a></p>
+<p>Fertility rate, total (births per woman). (2019). Retrieved October 17, 2020, from <a href="https://data.worldbank.org/indicator/SP.DYN.TFRT.IN?end=2018" class="uri">https://data.worldbank.org/indicator/SP.DYN.TFRT.IN?end=2018</a></p>
+<p>Grassa, J. L., &amp; News. (2017, March 08). The impact of education on declining birth rates. Retrieved October 17, 2020, from <a href="https://www.thesil.ca/impact-education-declining-birth-rates" class="uri">https://www.thesil.ca/impact-education-declining-birth-rates</a></p>
+<p>Hadley Wickham, Romain François, Lionel Henry and Kirill Müller (2020). dplyr: A Grammar of Data Manipulation. <a href="https://dplyr.tidyverse.org" class="uri">https://dplyr.tidyverse.org</a>, <a href="https://github.com/tidyverse/dplyr" class="uri">https://github.com/tidyverse/dplyr</a>.</p>
+<p>Hao Zhu (2020). kableExtra: Construct Complex Table with ‘kable’ and Pipe Syntax.
+<a href="http://haozhu233.github.io/kableExtra/" class="uri">http://haozhu233.github.io/kableExtra/</a>, <a href="https://github.com/haozhu233/kableExtra" class="uri">https://github.com/haozhu233/kableExtra</a>.</p>
+<p>Tommy’s: How age affects fertility. (2018). Retrieved October 17, 2020, from<br />
+<a href="https://www.tommys.org/pregnancy-information/planning-pregnancy/fertility-and-infertility/how-age-affects-fertility" class="uri">https://www.tommys.org/pregnancy-information/planning-pregnancy/fertility-and-infertility/how-age-affects-fertility</a></p>
+<p>Matias, M., &amp; Fontaine, A. M. (2017). Intentions to Have a Child: A Couple‐Based Process. Family Relations, 66(2), 231–243. <a href="https://doi.org/10.1111/fare.12250" class="uri">https://doi.org/10.1111/fare.12250</a></p>
+<p>Preis, H., Tovim, S., Mor, P., Grisaru-Granovsky, S., Samueloff, A., &amp; Benyamini, Y. (2020). Fertility intentions and the way they change following birth- a prospective longitudinal study. BMC pregnancy and childbirth, 20(1), 228. <a href="https://doi.org/10.1186/s12884-020-02922-y" class="uri">https://doi.org/10.1186/s12884-020-02922-y</a></p>
+<p>Testa, M. R. (2016). Educated women aren’t realising their fertility intentions. Retrieved October 17,2020,from <a href="https://population-europe.eu/news/educated-women-arent-realising-their-fertility-intentions" class="uri">https://population-europe.eu/news/educated-women-arent-realising-their-fertility-intentions</a></p>
+<p>Testa, M. R. (2014). On the positive correlation between education and fertility intentions in Europe: Individual- and country-level evidence, Advances in Life Course Research, 21, 28-42.
+<a href="https://doi.org/10.1016/j.alcr.2014.01.005" class="uri">https://doi.org/10.1016/j.alcr.2014.01.005</a></p>
+<p>T. Lumley (2020) “survey: analysis of complex survey samples”. R package version 4.0.</p>
+<p>Wickham et al., (2019). Welcome to the tidyverse. Journal of Open Source Software, 4(43), 1686, <a href="https://doi.org/10.21105/joss.01686" class="uri">https://doi.org/10.21105/joss.01686</a></p>
+<p>Witkin, G. (2018, May 17). Beyond the Physical: Mental Health on Your Fertility Journey. Retrieved October 17, 2020, from <a href="https://www.psychologytoday.com/us/blog/the-chronicles-infertility/201805/beyond-the-physical-mental-health-your-fertility-journey" class="uri">https://www.psychologytoday.com/us/blog/the-chronicles-infertility/201805/beyond-the-physical-mental-health-your-fertility-journey</a></p>
+</div>
